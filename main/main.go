@@ -45,7 +45,7 @@ func GetProduct() Product {
 }
 
 func main() {
-	ctx, cancelTimeout := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancelTimeout := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancelTimeout()
 	ctx, cancelFunc := context.WithCancelCause(ctx)
 	defer cancelFunc(nil)
