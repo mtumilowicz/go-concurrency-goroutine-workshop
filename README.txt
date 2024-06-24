@@ -9,10 +9,11 @@
     * https://medium.com/@arturkulig/communicating-sequential-processes-in-js-intro-e620688b6175
     * https://dev.to/karanpratapsingh/csp-vs-actor-model-for-concurrency-1cpg
     * https://aiochan.readthedocs.io/en/latest/csp.html
+    * https://chatgpt.com/
 
 ## preface
 * goals of this workshop
-    * introduction to concurrency approach in golang
+    * introduction to concurrency approach taken by golang
         * Communicating Sequential Processes (CSP)
         * how it differs from actor model
     * understanding of basic components
@@ -20,44 +21,45 @@
         * channel and select
         * context
     * peek into concurrency primitives
-        * WaitGroups, mutexes, atomics
+        * `WaitGroup`s, mutexes, atomics
 * workshop plan
     1. task1
-        * execute two requests in parallel (fetchCustomer, fetchProduct)
-        * support timeouts than can terminate requests
-        * return both customer and product to enable further processing
+        1. execute two requests in parallel (`fetchCustomer`, `fetchProduct`)
+        1. add timeouts than can terminate http requests
+        1. return both customer and product to enable further processing
     1. task2
         * encapsulate heavy computation in a function that supports
-            * contextual timeout
-            * declarative timeout
+            1. contextual timeout
+            1. declarative timeout
     1. task3
-        * divide and conquer: split array to smaller sums and sums them in goroutines
+        * divide and conquer: split array to smaller sums, sum them in goroutines and sum partial results
 
 ## prerequisite
 * Communicating Sequential Processes (CSP)
     * mathematical theory of concurrency based on message passing via channels
         * combines the sequential thread (threaded state) abstraction with synchronous message passing communication
-            * collection of independent processes is created, each with a distinct memory space
+            * collection of independent processes with a distinct memory space
                 * example: two processes may run on two cores of the same multiprocessor chip
             * data is exchanged between processors by the sending and receiving of messages
-    * process gradation
+    * gradation
         * processes
             * group of codes that can be considered as an independent entity
-            * quintessential example is that of a function
+            * example: function
         * sequential processes
             * deterministically equivalent to sequential execution
             * it is possible to predict what happens next by knowing the current state
-            * disclaimer: it does not mean that expressions are executed or evaluated from top to bottom
-                * control statements like while, for, etc., which are useful because they disrupt the sequential flow
+            * disclaimer: it does not mean execution from top to bottom
+                * control statements like while, for, etc., are useful because they disrupt the sequential flow
         * communicating sequential processes
-            * sequential processes that do their IO by rendezvous only
-            * rendezvous refers to a synchronization mechanism where two processes come together to exchange data directly and simultaneously
+            * sequential processes + IO by rendezvous
+                * rendezvous = synchronization mechanism where two processes come together to exchange data directly and simultaneously
     * vs actor model
-        * processes in CSP are anonymous, while actors have identities
-        * CSP uses channels for message passing, whereas actors use mailboxes
+        * actors have identities
+            * processes in CSP are anonymous
+        * actor model: asynchronous + indirect communication
             * CSP: synchronous + direct communication
-            * Actor model: asynchronous + indirect communication
-        * CSP messages are delivered in the order they were sent
+        * actor model: no ordering guarantees across different senders
+            * CSP messages are delivered in the order they were sent
 
 ## components
 * goroutine
@@ -216,7 +218,7 @@
 * `WaitGroup`
     * similar to `CountDownLatch` in java
     * use case
-        * one goroutine needs to wait for other goroutines
+        * used to wait for a collection of goroutines to finish executing
         * channel being written by multiple goroutines can be closed only once
 * `Once`
     * use case
