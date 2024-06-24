@@ -17,7 +17,10 @@
         * how it differs from actor model
     * understanding of basic components
         * goroutine
-        *
+        * channel and select
+        * context
+    * peek into concurrency primitives
+        * WaitGroups, mutexes, atomics
 * workshop plan
     1. task1
         * execute two requests in parallel (fetchCustomer, fetchProduct)
