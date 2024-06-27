@@ -63,18 +63,17 @@
 
 ## components
 * goroutine
+    * based CSP
     * lightweight thread, managed by the Go runtime
-    * set of kernel-level threads, each managing a local run queue (LRQ) of goroutines
-        * number of threads = `GOMAXPROCS`
-        * global run queue (GRQ) for goroutines not assigned yet to a kernel-level thread
-        * work stealing
-            * blocking operations
-                * old thread with its goroutine waiting is descheduled by the OS
-                    * LRQ is moved to other thread (new or from the idle pool)
-            * balance queues
-    * based on Communicating Sequential Processes (CSP)
-        * processes communicate with each other by sending and receiving messages through channels
-    * Go program starts => Go runtime creates a number of threads and launches a single goroutine to run program
+        * Go runtime
+            * set of kernel-level threads, each managing a local run queue (LRQ) of goroutines
+                * number of threads = `GOMAXPROCS`
+                * global run queue (GRQ) for goroutines not assigned yet to a kernel-level thread
+                * work stealing to balance queues
+                    * example: blocking operations
+                        * old thread with its goroutine waiting is descheduled by the OS
+                        * LRQ is moved to other thread (new or from the idle pool)
+            * program starts => Go runtime creates a number of threads and launches a single goroutine to run program
     * stack sizes can grow as needed
     * launched by placing the `go` keyword before a function invocation
     * any values returned by the function are ignored
@@ -95,10 +94,6 @@
         ```
     * passing a channel to a function = passing a pointer to the channel
         * similar to how `map` is implemented
-    * zero value: `nil`
-        * similar to map
-        * read from a nil channel never returns
-            * not done inside a case in a select statement => program will hang
     * value written to a channel can be read only once
         * in particular: multiple goroutines reading same channel => value read by only one of them
     * convention for passing / assigning
@@ -115,8 +110,9 @@
                 * gather data back from a set of goroutines
                 * limit concurrent usage
                 * backpressure
-    * read from a channel by using a for-range loop: `for v := range ch`
-        * loop continues until the channel is closed or break / return statement is reached
+    * zero value: `nil`
+        * read from a `nil` channel never returns
+        * can't be done inside select statement => program will hang
     * `close(ch)`
         * built-in function
         * calling twice => panic
@@ -126,10 +122,14 @@
             * buffered => remaining values will be returned in order
         * required only if a goroutine is reading
             * Go’s runtime can detect channels that are no longer referenced
+    * read from a channel by using a for-range loop: `for v := range ch`
+        * loop continues until the channel is closed or break / return statement is reached
     * `select`
-        * allows a goroutine to read/write to one of a set of multiple channels
-            * picks randomly from any of its cases that can go forward
+        * allows a goroutine to wait on multiple communication operations (reading/writing)
+            * it doesn't specifically allow to read/write to multiple channels simultaneously
+            * lets a goroutine wait until one of the multiple channel operations can proceed
         * blocks until one of its cases can run
+            * picks randomly from any of its cases that can go forward
         * prevents acquiring locks in an inconsistent order
             * select checks whether any of its cases can proceed
             * every goroutine deadlocked => runtime kills program
@@ -163,24 +163,25 @@
             * not the other way around
         * `Value` method checks whether a value is in a context or any of its parent contexts
             * linear search
-    * important to make it impossible for context keys to collide
-        ```
-        type productKey struct{}
-        func ContextWithProduct(ctx context.Context, product string) context.Context {
-            return context.WithValue(ctx, productKey{}, product)
-        }
-        func ProductFromContext(ctx context.Context) (string, bool) {
-            product, ok := ctx.Value(productKey{}).(string)
-            return product, ok
-        }
-        ```
+    * context keys should not collide
+        * pattern
+            ```
+            type productKey struct{}
+            func ContextWithProduct(ctx context.Context, product string) context.Context {
+                return context.WithValue(ctx, productKey{}, product)
+            }
+            func ProductFromContext(ctx context.Context) (string, bool) {
+                product, ok := ctx.Value(productKey{}).(string)
+                return product, ok
+            }
+            ```
     * can be cancellable
         * example
             ```
             ctx, cancelFunc := context.WithCancel(context.Background())
             defer cancelFunc() // must be called, otherwise resources leak
             ```
-        * tells all the code that’s listening for cancellation that it’s time to stop processing
+        * tells that it’s time to stop processing
             * `context.Done` method returns a channel of type `struct{}`
                 * empty struct uses no memory
                 * channel is closed when the cancel function is invoked
@@ -202,8 +203,7 @@
                     ```
                 * coordinate concurrent goroutines
                     * example: cancel other goroutines when one of them errored
-        * cause
-            * specifies a cause for the cancellation
+        * cause can be specified for the cancellation
             * example
                 ```
                 ctx, cancelFunc := context.WithCancelCause(context.Background())
