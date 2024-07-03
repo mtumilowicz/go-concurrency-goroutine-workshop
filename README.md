@@ -15,7 +15,6 @@
     * https://chatgpt.com/
 
 ## preface
-
 * goals of this workshop
     * introduction to concurrency approach taken by golang
         * Communicating Sequential Processes (CSP)
