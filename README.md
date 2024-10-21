@@ -4,7 +4,7 @@
 # go-concurrency-goroutine-workshop
 
 * references
-    * https://www.oreilly.com/library/view/learning-go/9781492077206/
+    * https://www.oreilly.com/library/view/learning-go/9781492077206/ 
     * https://go.dev/tour/concurrency/5
     * https://en.wikipedia.org/wiki/Communicating_sequential_processes
     * https://www.sciencedirect.com/topics/computer-science/communicating-sequential-process
